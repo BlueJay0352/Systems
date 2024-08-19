@@ -45,7 +45,7 @@ s=$(find /data/archives/0648518346341351424/20* -type d | grep '.*[a-z]$')      
 
 servername='hostname'
 sender="root@$servername"
-recp="jason.e.swanson6.ctr@mail.mil,daniel.w.brown108.ctr@mail.mil"
+recp="jay@mail.com"
 
 errors=$(grep -i "error" /var/log/dateMoveScript/$logFile)
 
