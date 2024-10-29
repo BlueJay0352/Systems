@@ -16,7 +16,6 @@ function isNum ($num) {
 $admin = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (! $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Please run script as Administrator" -ForegroundColor Red
-    Read-Host "Press any key to exit"
     exit 1
 }
 else {
@@ -32,7 +31,7 @@ while ($comps -eq '')
 Do {
     $evtID = $(Write-Host "Please Enter Event ID to Search: " -ForegroundColor Green -NoNewline; Read-Host)
 }
-while (($evtID -eq '') -or (( -not(isNum $evtID))))
+while (($evtID -eq '') -or ( !(isNum $evtID)))
 
 
 # Verify Connection To Computer
@@ -86,9 +85,11 @@ else {
     }
 
     $select = Read-Host "Enter the index of the entry you want to select (or press Enter to skip)"
-   if ($select -ne "") {
-        $selectedEntry = $entries[$select]
+    if ($select -ne "") {
+        $selectedEntry = $logHave[$select]
         Write-Host "Selected: $($selectedEntry.LogName)"
         Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Export-Csv ./$($selectedEntry.LogName)_$evtID.csv
         Write-Host "OutPut $($selectedEntry.LogName)_$evtID.csv to" $(pwd).Path 
+    }
+
 }
