@@ -86,10 +86,9 @@ else {
     }
 
     $select = Read-Host "Enter the index of the entry you want to select (or press Enter to skip)"
-    if ($select -ne "") {
+   if ($select -ne "") {
         $selectedEntry = $entries[$select]
         Write-Host "Selected: $($selectedEntry.LogName)"
-        Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Export-Csv .\log
-    }
-
+        Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Export-Csv ./$($selectedEntry.LogName)_$evtID.csv
+        Write-Host "OutPut $($selectedEntry.LogName)_$evtID.csv to" $(pwd).Path 
 }
