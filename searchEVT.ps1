@@ -88,8 +88,8 @@ else {
     if ($select -ne "") {
         $selectedEntry = $logHave[$select]
         Write-Host "Selected: $($selectedEntry.LogName)"
-        Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Export-Csv ./$($selectedEntry.LogName)_$evtID.csv
-        Write-Host "OutPut $($selectedEntry.LogName)_$evtID.csv to" $(pwd).Path 
+        Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Export-Csv ./$($selectedEntry.ProviderNames)_$evtID.csv
+        Write-Host "OutPut $($selectedEntry.ProviderNames)_$evtID.csv to" $(pwd).Path 
     }
 
 }
