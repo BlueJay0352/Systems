@@ -89,7 +89,8 @@ else {
         $fixLogName = $selectedEntry.LogName -replace '[\\/]', '_'
         $filePath = ".\$($fixLogName)_$evtID.csv"
         Write-Host "Selected: $($selectedEntry.LogName)"
-        Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Select-Object -Property TimeCreated, Id, ProviderName, MachineName, UserID, @{n='Message';e={$_.Message -replace '\s+', " "}} | Export-Csv -Path $filePath 
+    # Export message column as one line       
+        # Get-WinEvent -FilterHashtable @{LogName=$selectedEntry.LogName;ID=$evtID} | Select-Object -Property TimeCreated, Id, ProviderName, MachineName, UserID, @{n='Message';e={$_.Message -replace '\s+', " "}} | Export-Csv -Path $filePath 
         Write-Host "OutPut "$fixLogName'_'$evtID".csv to" $(pwd).Path 
     }
 
