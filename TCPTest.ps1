@@ -5,7 +5,7 @@ $Ports = (22,80,135)
 $Out = "C:\Users\Public\TCPResults.csv"
 
 if (!(Test-Path $Out)) {
-    "Date,SourceHost,SourceIP,DestHost,DestIP,DestPort,TCPTest" | Out-File -FilePath $Out -Encoding ascii
+    "Date,SourceHost,SourceIP,DestHost,DestIP,DestPort,TCPTest" | Set-Content -FilePath $Out -Encoding ascii
 }
 
 ForEach ($Server in $Servers)  {
