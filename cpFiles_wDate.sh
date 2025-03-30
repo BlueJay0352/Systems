@@ -1,5 +1,6 @@
 #!/bin/sh
-#Script for moving ESM event folders greater than X days to nfs share /mnt3
+
+# Script for moving ESM event folders greater than X days to nfs share /mnt3
 #set -xv
 
 logDate=$(date +"%b%d%Y")
