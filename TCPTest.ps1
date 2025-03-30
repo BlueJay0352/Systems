@@ -1,3 +1,5 @@
+# PowerShell script for testing network connectivity to endpoints and ports.
+
 $Servers = ("192.168.1.1", "localhost")
 
 $Ports = (22,80,135)
