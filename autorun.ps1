@@ -1,11 +1,22 @@
 # PowerShell script for checking known autorun/startup persistance locations
 
-# Check for admin
+# Check for admin and give user option to continue or exit
 $admin = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (! $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "[!] Running script as Standard user, run as Administrator for best results " -ForegroundColor Red
-    Start-Sleep -Seconds 2
+    Write-Host "[!] Press Enter to continue without admin permissions, or Esc to exit..." -ForegroundColor Red
+    $key = $null
+    do {
+        $key = [System.Console]::ReadKey($true)
+        if ($key.Key -eq "escape") {
+            Write-Host "`n[!] Aborting script...Goodbye" -ForegroundColor Red
+            exit 
+        }
+
+    } until ($key.Key -eq 'Enter')
+
 }
+
 else {
     Write-Host "Running as Administrator..." -ForegroundColor Green
     Start-Sleep -Seconds 1
@@ -183,6 +194,9 @@ Get-ScheduledTasks
 Get-AutoStartServices
 Get-WmicStartup
 
-Write-Host "=== Autorun scan complete. ===" -ForegroundColor Green
-
-
+if ($key.Key -eq "Enter") {
+    Write-Host "=== Autorun scan using non admin credentials complete. ===" -ForegroundColor Green
+} 
+else {
+    Write-Host "=== Autorun scan complete. ===" -ForegroundColor Green
+}
