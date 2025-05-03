@@ -12,9 +12,7 @@ if (! $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
             Write-Host "`n[!] Aborting script...Goodbye" -ForegroundColor Red
             exit 
         }
-
     } until ($key.Key -eq 'Enter')
-
 }
 
 else {
