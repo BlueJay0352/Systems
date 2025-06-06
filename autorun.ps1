@@ -177,7 +177,8 @@ function Get-AutoStartServices {
 function Get-WmicStartup {
     Write-Host "`n=== WMIC Startup Commands ==="`n
     try {
-        $entries = wmic startup get Caption, Command
+        $entries = Get-CimInstance Win32_StartupCommand | Select-Object Name, Command
+        #Deprecated - $entries = wmic startup get Caption, Command
         $entries | Out-String
     } catch {
         Write-Host "WMIC not available on this system."
