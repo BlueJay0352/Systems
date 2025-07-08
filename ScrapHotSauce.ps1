@@ -28,11 +28,12 @@ $scraped = (Invoke-WebRequest -Uri "https://shop.fallowrestaurant.com/").Content
 $regExp = '(?i)(?=.*handcrafted)(?=.*btn).*'
 $matchedHREF = [regex]::Matches($scraped, $regExp)
 
-# Email if site is NOT sold out of hotsauce
+# Save each URL after href=
 foreach ($matchHREF in $matchedHREF) {
     $urlRegExp = 'href="([^"]+)"'
     $urlMatches = [regex]::Matches($matchHREF, $urlRegExp)
 
+    # Check if NOT sold out
     if (! $matchHREF -match "Sold out" ) {
        
         foreach ($url in $urlMatches) {
