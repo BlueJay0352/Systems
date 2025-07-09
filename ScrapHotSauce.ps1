@@ -4,11 +4,11 @@
 # Set email creds
 function Send-YahooNotify {
     param (
-        [string]$To = "jayvet05@yahoo.com",
+        [string]$To = "email@yahoo.com",
         [string]$Subject = "Fallow HotSauce In Stock",
         [string]$Body,
         [string]$user_pass = "$env:USERPROFILE\yahoo.txt",
-        [string]$user_email = "jayvet05@yahoo.com"
+        [string]$user_email = "email@yahoo.com"
     )
 
     $secure_pass = Get-Content $user_pass | ConvertTo-SecureString
