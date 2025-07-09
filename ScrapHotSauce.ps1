@@ -33,16 +33,17 @@ foreach ($matchHREF in $matchedHREF) {
     $urlRegExp = 'href="([^"]+)"'
     $urlMatches = [regex]::Matches($matchHREF, $urlRegExp)
 
-    # Check if NOT sold out
-    if (! $matchHREF -match "Sold out" ) {
-       
-        foreach ($url in $urlMatches) {
-            # regex extract only part inside quotes
-            $endURL = $url.Groups[1].Value 
-            $urlConstruct = "https://shop.fallowrestaurant.com" + $endURL
+    foreach ($url in $urlMatches) {
+        # regex extract only part inside quotes
+        $endURL = $url.Groups[1].Value 
+        $urlConstruct = "https://shop.fallowrestaurant.com" + $endURL
+        
+        # Check if NOT sold out
+        if (! $matchHREF -match "Sold out" ) {
             Send-YahooNotify -Body "$urlConstruct"
+            
+        } else {
+            Write-Host $urlConstruct "Sold Out" -ForegroundColor Red 
         }
-    } else {
-        Write-Host $urlMatches "Sold Out"     
     }
 }
