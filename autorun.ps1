@@ -1,24 +1,38 @@
 # PowerShell script for checking known autorun/startup persistance locations
+# Outputs to file and compare last for any changes to these locations
 
 # Check for admin and give user option to continue or exit
 $admin = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (! $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+$isAdmin = $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (! $isAdmin) {
     Write-Host "[!] Running script as Standard user, run as Administrator for best results " -ForegroundColor Red
     Write-Host "[!] Press Enter to continue without admin permissions, or Esc to exit..." -ForegroundColor Red
     $key = $null
     do {
         $key = [System.Console]::ReadKey($true)
+        
         if ($key.Key -eq "escape") {
             Write-Host "`n[!] Aborting script...Goodbye" -ForegroundColor Red
             exit 
         }
     } until ($key.Key -eq 'Enter')
+} else {
+    Write-Host "Running as Administrator..." -ForegroundColor Green
+    Start-Sleep -Seconds 2
 }
 
-else {
-    Write-Host "Running as Administrator..." -ForegroundColor Green
-    Start-Sleep -Seconds 1
+
+$outPath = "$env:USERPROFILE\Desktop\autorun-Report.txt"
+# | Tee-Object -Append -FilePath $outPath
+
+"===Windows AutoRun Report===" | Out-File -FilePath $outPath
+
+if (!$isAdmin) {
+    "===Script Run as Standard User===`n" | Out-File -Append -FilePath $outPath
+} else {
+    "===Script Run as Administrator===`n" | Out-File -Append -FilePath $outPath
 }
+
 
 # Windows Local Machine Registry - create hashtable array to eval both Path and ValueName
 # https://www.picussecurity.com/resource/blog/picus-10-critical-mitre-attck-techniques-t1060-registry-run-keys-startup-folder
@@ -44,7 +58,9 @@ $userRegEntries = @(
 )
 
 function Get-RegistryLMAutoruns {
-    Write-Host "`n=== Registry Local Machine Autoruns ==="
+    "`n=== Registry Local Machine Autoruns ===" | Tee-Object -Append -FilePath $outPath
+    "`nIf you wish to remove a registry value see example below:" | Tee-Object -Append -FilePath $outPath
+    "Remove-ItemProperty -Path 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run\  -Name Adobe CCXProcess'" | Tee-Object -Append -FilePath $outPath
 
     foreach ($entry in $machineRegEntries) {
         $path = $entry.Path
@@ -53,32 +69,32 @@ function Get-RegistryLMAutoruns {
         if (Test-Path $path) {
             # If valuename is present
             if ($null -ne $valueName) {
-                Write-Host "`n[$path -> $valueName]" -ForegroundColor DarkCyan
+                "`n[$path -> $valueName]" | Tee-Object -Append -FilePath $outPath
                 try {
                     $value = Get-ItemPropertyValue -Path $path -Name $valueName
-                    Write-Host "${valueName}: $value" -ForegroundColor Yellow
+                    "${valueName}: $value" | Tee-Object -Append -FilePath $outPath
                 } catch {
-                    Write-Host "Failed to get ${valueName}: $_" -ForegroundColor Red
-                }
+                    "Failed to get ${valueName}: $_" | Tee-Object -Append -FilePath $outPath
+                } 
             } else {
-                Write-Host "`n[$path]" -ForegroundColor DarkCyan
+                "`n[$path]" | Tee-Object -Append -FilePath $outPath
                 Get-ItemProperty -Path $path | ForEach-Object {
                     $_.PSObject.Properties | Where-Object {
                         $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider")
                     } | ForEach-Object {
-                        Write-Host "$($_.Name): $($_.Value)" -ForegroundColor Yellow
+                        "$($_.Name): $($_.Value)" | Tee-Object -Append -FilePath $outPath
                     }
                 }
             }
         } else {
-            Write-Host "`n[$path]" -ForegroundColor Cyan    
-            Write-Host "Path does not exist" -ForegroundColor Red
+            "`n[$path]" | Tee-Object -Append -FilePath $outPath   
+            "Path does not exist" | Tee-Object -Append -FilePath $outPath
         }
     }
 }
 
 function Get-RegistryUserAutoruns {
-    Write-Host "`n=== Registry User Autoruns ==="
+    "`n=== Registry User Autoruns ===" | Tee-Object -Append -FilePath $outPath
 
     foreach ($entry in $userRegEntries) {
 
@@ -87,9 +103,9 @@ function Get-RegistryUserAutoruns {
             $_.Name -match '^HKEY_USERS\\S-\d-\d+-(\d+-){1,14}\d+$'
         }
     
+        # Resolve SID to username
         foreach ($sid in $userSIDs) {
             $sidString = ($sid.Name -replace '^HKEY_USERS\\', '')
-            # Try to resolve SID to username
             try {
                 $user = (New-Object System.Security.Principal.SecurityIdentifier($sidString)).Translate([System.Security.Principal.NTAccount]).Value
             } catch {
@@ -100,22 +116,22 @@ function Get-RegistryUserAutoruns {
             $fullPath = "Registry::$sid\$entry"
            
             if (Test-Path $fullPath) {
-                Write-Host "`n[$user ($sidString)\$entry]" -ForegroundColor DarkCyan
+                "`n[$user ($sidString)\$entry]" | Tee-Object -Append -FilePath $outPath
 
                 try {
                     Get-ItemProperty -Path $fullPath | ForEach-Object {
                         $_.PSObject.Properties | Where-Object {
                             $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider")
                         } | ForEach-Object {
-                            Write-Host "$($_.Name): $($_.Value)" -ForegroundColor Yellow
+                            "$($_.Name): $($_.Value)" | Tee-Object -Append -FilePath $outPath
                         }
                     }
                 } catch {
-                    Write-Host "Failed to read values: $_" -ForegroundColor Red
+                    "Failed to read values: $_" | Tee-Object -Append -FilePath $outPath
                 }
             } else {
-                Write-Host "`n[$user\$entry]" -ForegroundColor Cyan 
-                Write-Host "Path does not exist" -ForegroundColor Red
+                "`n[$user\$entry]" | Tee-Object -Append -FilePath $outPath
+                "Path does not exist" | Tee-Object -Append -FilePath $outPath
 
             }
         }
@@ -127,16 +143,16 @@ function Get-StartupFolderItems {
     $systemStartup = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
 
     # Check system-wide startup folder
-    Write-Host "`n=== System Startup Folder ==="
+    "`n=== System Startup Folder ===" | Tee-Object -Append -FilePath $outPath
     if (Test-Path $systemStartup) {
-        Write-Host "`n[$systemStartup]" -ForegroundColor DarkCyan
+        "`n[$systemStartup]" | Tee-Object -Append -FilePath $outPath
         Get-ChildItem -Path $systemStartup -Force | ForEach-Object {
-            Write-Host $_.FullName -ForegroundColor Yellow
+            $_.FullName | Tee-Object -Append -FilePath $outPath
         }
     }
 
     # Loop through each enabled user's profile and check their Startup folder
-    Write-Host "`n=== User Startup Folders ==="
+    "`n=== User Startup Folders ===" | Tee-Object -Append -FilePath $outPath
     
     # Return path of windows users folder
     $usersLocation = ($env:SystemDrive + "\Users")
@@ -146,42 +162,43 @@ function Get-StartupFolderItems {
         $startupPath = Join-Path $profilePath "AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
 
         if (Test-Path $startupPath) {
-            Write-Host "`n[$startupPath]" -ForegroundColor DarkCyan
+            "`n[$startupPath]" | Tee-Object -Append -FilePath $outPath
             Get-ChildItem -Path $startupPath -Force | ForEach-Object {
-                Write-Host $_.FullName -ForegroundColor Yellow
+                $_.FullName | Tee-Object -Append -FilePath $outPath
             }
         } else {
-            Write-Host "`n[$startupPath] - Not found" -ForegroundColor Red
+            "`n[$startupPath] - Not found" | Tee-Object -Append -FilePath $outPath
         }
     }
 }
 function Get-ScheduledTasks {
-    Write-Host "`n=== Scheduled Tasks at Logon ==="`n
+    "`n=== Scheduled Tasks at Logon ===`n" | Tee-Object -Append -FilePath $outPath
     $tasks = Get-ScheduledTask
 
     foreach ($task in $tasks) {
         $actions = ($task.Actions | ForEach-Object { $_.Execute + " " + $_.Arguments })
-        Write-Host "Task: $($task.TaskName)" -ForegroundColor DarkCyan
-        Write-Host "  Path: $($task.TaskPath)"
-        Write-Host "  Actions: $actions"
+        "Task: $($task.TaskName)" | Tee-Object -Append -FilePath $outPath
+        "  Path: $($task.TaskPath)" | Tee-Object -Append -FilePath $outPath
+        "  Actions: $actions" | Tee-Object -Append -FilePath $outPath
     }
 }
 
 function Get-AutoStartServices {
-    Write-Host "`n=== Auto-Start Services ==="`n
+    "`n=== Auto-Start Services ===`n" | Tee-Object -Append -FilePath $outPath
     Get-Service | Where-Object { $_.StartType -eq 'Automatic' } | ForEach-Object {
-        Write-Host "$($_.Name): $($_.DisplayName)"
+        "$($_.Name): $($_.DisplayName)" | Tee-Object -Append -FilePath $outPath
     }
 }
 
 function Get-WmicStartup {
-    Write-Host "`n=== WMIC Startup Commands ==="`n
+    "`n=== WMIC Startup Commands ===`n" | Tee-Object -Append -FilePath $outPath
     try {
+        # Deprecated - $entries = wmic startup get Caption, Command
         $entries = Get-CimInstance Win32_StartupCommand | Select-Object Name, Command
-        #Deprecated - $entries = wmic startup get Caption, Command
-        $entries | Out-String
+        # Formated and output as string to stop exec out of order
+        $entries | Format-Table -AutoSize | Out-String | Tee-Object -Append -FilePath $outPath
     } catch {
-        Write-Host "WMIC not available on this system."
+        "WMIC not available on this system." | Tee-Object -Append -FilePath $outPath
     }
 }
 
@@ -193,9 +210,9 @@ Get-ScheduledTasks
 Get-AutoStartServices
 Get-WmicStartup
 
-if ($key.Key -eq "Enter") {
+if (! $isAdmin) {
     Write-Host "=== Autorun scan using non admin credentials complete. ===" -ForegroundColor Green
-} 
-else {
+} else {
     Write-Host "=== Autorun scan complete. ===" -ForegroundColor Green
 }
+Write-Host "Report Saved -" $outPath
