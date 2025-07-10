@@ -23,7 +23,7 @@ if (! $isAdmin) {
 
 # Get date and time add to filename
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$outPath = "$env:USERPROFILE\Desktop\autorun-Report.txt"
+$outPath = "$env:USERPROFILE\Desktop\autorun-report_$timestamp.txt"
 # | Tee-Object -Append -FilePath $outPath
 
 "===Windows AutoRun Report===" | Out-File -FilePath $outPath
