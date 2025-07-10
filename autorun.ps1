@@ -21,7 +21,8 @@ if (! $isAdmin) {
     Start-Sleep -Seconds 2
 }
 
-
+# Get date and time add to filename
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $outPath = "$env:USERPROFILE\Desktop\autorun-Report.txt"
 # | Tee-Object -Append -FilePath $outPath
 
