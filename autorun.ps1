@@ -24,14 +24,13 @@ if (! $isAdmin) {
 # Get date and time add to filename
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $outPath = "$env:USERPROFILE\Desktop\autorun-report_$timestamp.txt"
-# | Tee-Object -Append -FilePath $outPath
 
 "===Windows AutoRun Report===" | Out-File -FilePath $outPath
 
 if (!$isAdmin) {
-    "===Script Run as Standard User===`n" | Out-File -Append -FilePath $outPath
+    "===Script Run as Standard User===`n" | Tee-Object -Append -FilePath $outPath
 } else {
-    "===Script Run as Administrator===`n" | Out-File -Append -FilePath $outPath
+    "===Script Run as Administrator===`n" | Tee-Object -Append -FilePath $outPath
 }
 
 
@@ -196,10 +195,44 @@ function Get-WmicStartup {
     try {
         # Deprecated - $entries = wmic startup get Caption, Command
         $entries = Get-CimInstance Win32_StartupCommand | Select-Object Name, Command
-        # Formated and output as string to stop exec out of order
-        $entries | Format-Table -AutoSize | Out-String | Tee-Object -Append -FilePath $outPath
+        # Output as string to stop exec out of order
+        $entries | Out-String | Tee-Object -Append -FilePath $outPath
     } catch {
         "WMIC not available on this system." | Tee-Object -Append -FilePath $outPath
+    }
+}
+
+function Compare-Reports {
+
+        $folderPath = "$env:USERPROFILE\Desktop"
+    $filePattern = "autorun-report_*.txt"
+
+    $files = Get-ChildItem -Path $folderPath -Filter $filePattern | Sort-Object LastWriteTime -Descending
+
+    if ($files.Count -lt 2) {
+        Write-Warning "Not enough files found to compare"
+        return
+    }
+
+    # Get first 2 reports
+    $latestFile = $files[0].FullName
+    $previousFile = $files[1].FullName
+
+    Write-Host "Comparing:`n - $latestFile`n - $previousFile`n"
+
+    # Read contents into variables
+    $contentLatest = Get-Content -Path $latestFile 
+    $contentPrevious = Get-Content -Path $previousFile
+
+    # Compare 2 files
+    $diff = diff $contentLatest $contentPrevious 
+
+    if ($diff) {
+        Write-Host "`n!!!Differences found!!!" -ForegroundColor Red
+        $diff | Format-Table
+    } else {
+        Write-Host "No differences found between the two reports" -ForegroundColor Green
+
     }
 }
 
@@ -217,3 +250,6 @@ if (! $isAdmin) {
     Write-Host "=== Autorun scan complete. ===" -ForegroundColor Green
 }
 Write-Host "Report Saved -" $outPath
+
+Compare-Reports
+
