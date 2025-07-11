@@ -204,7 +204,7 @@ function Get-WmicStartup {
 
 function Compare-Reports {
 
-        $folderPath = "$env:USERPROFILE\Desktop"
+    $folderPath = "$env:USERPROFILE\Desktop"
     $filePattern = "autorun-report_*.txt"
 
     $files = Get-ChildItem -Path $folderPath -Filter $filePattern | Sort-Object LastWriteTime -Descending
@@ -232,7 +232,6 @@ function Compare-Reports {
         $diff | Format-Table
     } else {
         Write-Host "No differences found between the two reports" -ForegroundColor Green
-
     }
 }
 
