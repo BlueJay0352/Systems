@@ -225,11 +225,11 @@ function Compare-Reports {
     $contentPrevious = Get-Content -Path $previousFile
 
     # Compare 2 files
-    $diff = diff $contentLatest $contentPrevious 
+    $changes = diff $contentLatest $contentPrevious 
 
-    if ($diff) {
+    if ($changes) {
         Write-Host "`n!!!Differences found!!!" -ForegroundColor Red
-        $diff | Format-Table
+        $changes | Format-Table
     } else {
         Write-Host "No differences found between the two reports" -ForegroundColor Green
     }
