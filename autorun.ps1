@@ -23,7 +23,7 @@ if (! $isAdmin) {
 
 # Get date and time add to filename
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$outPath = "$env:USERPROFILE\Desktop\autorun-report_$timestamp.txt"
+$outPath = "$env:USERPROFILE\Desktop\AutoRun_Reports\autorun-report_$timestamp.txt"
 
 "===Windows AutoRun Report===" | Out-File -FilePath $outPath
 
@@ -204,7 +204,7 @@ function Get-WmicStartup {
 
 function Compare-Reports {
 
-    $folderPath = "$env:USERPROFILE\Desktop"
+    $folderPath = "$env:USERPROFILE\Desktop\AutoRun_Reports"
     $filePattern = "autorun-report_*.txt"
 
     $files = Get-ChildItem -Path $folderPath -Filter $filePattern | Sort-Object LastWriteTime -Descending
@@ -231,7 +231,7 @@ function Compare-Reports {
         Write-Host "`n!!!Differences found!!!" -ForegroundColor Red
         $changes | Format-Table
     } else {
-        Write-Host "No differences found between the two reports" -ForegroundColor Green
+        Write-Host "No differences found between the last two reports" -ForegroundColor Green
     }
 }
 
