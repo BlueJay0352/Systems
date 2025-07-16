@@ -23,8 +23,15 @@ function Send-YahooNotify {
     }
 }
 
-# Scrap site and match pattern for hotsauce elements
-$scraped = (Invoke-WebRequest -Uri "https://shop.fallowrestaurant.com/").Content
+# Scrap site content
+    try {
+        $scraped = (Invoke-WebRequest -Uri "https://shop.fallowrestaurant.com/").Content
+    } catch {
+        Write-Error "A connection error occurred: $($_.Exception.Message)"
+        exit
+    }
+
+# Match pattern for hotsauce elements
 $regExp = '(?i)(?=.*handcrafted)(?=.*btn).*'
 $matchedHREF = [regex]::Matches($scraped, $regExp)
 
