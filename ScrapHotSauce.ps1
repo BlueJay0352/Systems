@@ -4,11 +4,11 @@
 # Set email creds
 function Send-YahooNotify {
     param (
-        [string]$To = "email@yahoo.com",
+        [string]$To = "jayvet05@yahoo.com",
         [string]$Subject = "Fallow HotSauce In Stock",
         [string]$Body,
         [string]$user_pass = "$env:USERPROFILE\yahoo.txt",
-        [string]$user_email = "email@yahoo.com"
+        [string]$user_email = "jayvet05@yahoo.com"
     )
 
     $secure_pass = Get-Content $user_pass | ConvertTo-SecureString
@@ -41,16 +41,17 @@ foreach ($matchHREF in $matchedHREF) {
     $urlMatches = [regex]::Matches($matchHREF, $urlRegExp)
 
     foreach ($url in $urlMatches) {
-        # regex extract only part inside quotes
+        # Regex extract only part inside quotes
         $endURL = $url.Groups[1].Value 
-        $urlConstruct = "https://shop.fallowrestaurant.com" + $endURL
-        
-        # Check if NOT sold out
-        if (! $matchHREF -match "Sold out" ) {
-            Send-YahooNotify -Body "$urlConstruct"
+        $urlConstruct = "https://shop.fallowrestaurant.com" + $endURL  
+    } 
+
+    # Check if available to add to cart
+    if ( $matchHREF -match "Add" ) {
+        Send-YahooNotify -Body "$urlConstruct"
             
-        } else {
-            Write-Host $urlConstruct "Sold Out" -ForegroundColor Red 
-        }
+    } else {
+        Write-Host $urlConstruct "Sold Out" -ForegroundColor Red 
     }
+    
 }
