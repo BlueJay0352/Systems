@@ -21,11 +21,19 @@ if (! $isAdmin) {
     Start-Sleep -Seconds 2
 }
 
+# Check for AutoRun Report folder and create if needed
+$autoRunPath = "$env:USERPROFILE\Desktop\AutoRun_Reports"
+if (! (Test-Path $autoRunPath)) {
+    Write-Host "Creating AutoRun Report Folder"
+    New-Item -Path $autoRunPath -ItemType Directory
+}
+
 # Get date and time add to filename
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $outPath = "$env:USERPROFILE\Desktop\AutoRun_Reports\autorun-report_$timestamp.txt"
 
 "===Windows AutoRun Report===" | Out-File -FilePath $outPath
+
 
 if (!$isAdmin) {
     "===Script Run as Standard User===`n" | Tee-Object -Append -FilePath $outPath
