@@ -2,13 +2,13 @@
 # Email notification if hotsauce is in stock
 
 # Set email creds
-function Send-YahooNotify {
+function Send-MailNotify {
     param (
-        [string]$To = "jayvet05@yahoo.com",
+        [string]$To = "abc@mail.com",
         [string]$Subject = "Fallow HotSauce In Stock",
         [string]$Body,
-        [string]$user_pass = "$env:USERPROFILE\yahoo.txt",
-        [string]$user_email = "jayvet05@yahoo.com"
+        [string]$user_pass = "$env:USERPROFILE\credential.txt",
+        [string]$user_email = "abc@mail.com"
     )
 
     $secure_pass = Get-Content $user_pass | ConvertTo-SecureString
@@ -48,7 +48,7 @@ foreach ($matchHREF in $matchedHREF) {
 
     # Check if available to add to cart
     if ( $matchHREF -match "Add" ) {
-        Send-YahooNotify -Body "$urlConstruct"
+        Send-MailNotify -Body "$urlConstruct"
             
     } else {
         Write-Host $urlConstruct "Sold Out" -ForegroundColor Red 
